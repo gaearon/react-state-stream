@@ -180,17 +180,40 @@ var App4 = React.createClass({
     return { text: 'Hello' };
   },
 
+  handleKeyDown: function (e) {
+    var text = this.state.text;
+
+    switch (e.keyCode) {
+    case 8: // backspace
+      if (text.length > 0) {
+        text = text.substring(0, text.length - 1);
+      }
+      e.preventDefault();
+      break;
+    }
+
+    this.setState({
+      text: text
+    });
+  },
+
   handleKeyPress: function (e) {
     e.preventDefault();
-    var ch = String.fromCharCode(e.charCode);
+
+    var text = this.state.text;
+    text += String.fromCharCode(e.charCode);
+
     this.setState({
-      text: this.state.text + ch
+      text: text
     });
   },
 
   render: function() {
     return (
-      <div style={{ marginTop: 20 }} onKeyPress={this.handleKeyPress} contentEditable>
+      <div style={{ marginTop: 20 }}
+           contentEditable
+           onKeyPress={this.handleKeyPress}
+           onKeyDown={this.handleKeyDown}>
         <Container>
           {this.state.text.split('').map(function (l, i) {
             return <span key={i}>{l}</span>;
