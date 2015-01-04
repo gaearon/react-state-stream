@@ -180,17 +180,17 @@ var App4 = React.createClass({
     return { text: 'Hello' };
   },
 
-  handleClick: function () {
-    if (this.state.text === 'Hello') {
-      this.setState({ text: 'Hello, world' });
-    } else {
-      this.setState({ text: 'Hello' });
-    }
+  handleKeyPress: function (e) {
+    e.preventDefault();
+    var ch = String.fromCharCode(e.charCode);
+    this.setState({
+      text: this.state.text + ch
+    });
   },
 
   render: function() {
     return (
-      <div style={{ marginTop: 20 }} onClick={this.handleClick}>
+      <div style={{ marginTop: 20 }} onKeyPress={this.handleKeyPress} contentEditable>
         <Container>
           {this.state.text.split('').map(function (l, i) {
             return <span key={i}>{l}</span>;
