@@ -5,19 +5,21 @@ var stateStream = require('./stateStream');
 
 var Child = React.createClass({
   mixins: [stateStream.Mixin],
+
+  getInitialStateStreamTick: function(state) {
+    // note that we use this.props here, and because of laziless, we know it's
+    // gonna be the very current value of props (when the item is evaluated).
+    // This is abusing the behavior of laziness and likely not a good idea
+    // (e.g. in clojure, lazy seqs are chunked 32 items at time rather than 1,
+    // so this shortcut wouldn't work)
+    return M.hash_map(
+      'deg',
+      M.get(state, 'deg') + 2 * (this.props.turnLeft ? -1 : 3)
+    );
+  },
+
   getInitialStateStream: function() {
-    var self = this;
-    return M.iterate(function(state) {
-      // note that we use this.props here, and because of laziless, we know it's
-      // gonna be the very current value of props (when the item is evaluated).
-      // This is abusing the behavior of laziness and likely not a good idea
-      // (e.g. in clojure, lazy seqs are chunked 32 items at time rather than 1,
-      // so this shortcut wouldn't work)
-      return M.hash_map(
-        'deg',
-        M.get(state, 'deg') + 2 * (self.props.turnLeft ? -1 : 3)
-      );
-    }, M.hash_map('deg', 0));
+    return M.iterate(this.getInitialStateStreamTick, M.hash_map('deg', 0));
   },
 
   render: function() {
@@ -38,15 +40,22 @@ var Child = React.createClass({
   }
 });
 
+if (module.makeHot) {
+  Child = module.makeHot(Child);
+}
+
 var App1 = React.createClass({
   mixins: [stateStream.Mixin],
+
+  getInitialStateStreamTick: function(a, i) {
+    return M.hash_map(
+      'deg', i * -2,
+      'childTurnLeft', false
+    );
+  },
+
   getInitialStateStream: function() {
-    return M.map(function(a, i) {
-      return M.hash_map(
-        'deg', i * -2,
-        'childTurnLeft', false
-      );
-    }, stateStream.toRange(999999), M.range());
+    return M.map(this.getInitialStateStreamTick, stateStream.toRange(999999), M.range());
   },
 
   handleClick: function() {
