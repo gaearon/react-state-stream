@@ -24,6 +24,21 @@ function diff(o1, o2) {
   return res;
 }
 
+function toKeyValueList(obj) {
+  var arr = [];
+
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      arr.push({
+        key: key,
+        value: obj[key]
+      });
+    }
+  }
+
+  return arr;
+}
+
 var Container = React.createClass({
   mixins: [stateStream.Mixin],
   getInitialStateStream: function() {
@@ -41,7 +56,7 @@ var Container = React.createClass({
     }
 
     return M.repeat(1, M.js_to_clj({
-      children: children,
+      children: toKeyValueList(children),
       configs: configs,
     }));
   },
@@ -56,8 +71,7 @@ var Container = React.createClass({
       return;
     }
 
-    // For some reason, toObj messes up key order here:
-    var children = M.js_to_clj(/*toObj(*/nextProps.children/*)*/);
+    var children = M.js_to_clj(toKeyValueList(o1));
     var duration = 1700;
     var frameCount = stateStream.toFrameCount(duration);
     var initState = this.state;
@@ -133,13 +147,9 @@ var Container = React.createClass({
 
   render: function() {
     var state = this.state;
-    var children = [];
-
-    /*
-    for (var key in state.children) {
-      if (!state.children.hasOwnProperty(key)) {
-        continue;
-      }
+    var children = state.children.map(function (kv) {
+      var key = kv.key;
+      var child = kv.value;
       var s = {
         top: state.configs[key].top,
         width: state.configs[key].width,
@@ -148,32 +158,10 @@ var Container = React.createClass({
         overflow: 'hidden',
         WebkitUserSelect: 'none',
       };
-      children.push(
-        <span style={s} key={key}>{state.children[key]}</span>
-      );
-    }
-    */
 
-    for (var index in state.children) {
-      if (!state.children.hasOwnProperty(index)) {
-        continue;
-      }
+      return <span style={s} key={key}>{child}</span>;
+    });
 
-      // Why do I have to do this?
-      var key = '.$' + state.children[index].key;
-
-      var s = {
-        top: state.configs[key].top,
-        width: state.configs[key].width,
-        opacity: state.configs[key].opacity,
-        position: 'relative',
-        overflow: 'hidden',
-        WebkitUserSelect: 'none',
-      };
-      children.push(
-        <span style={s} key={key}>{state.children[index]}</span>
-      );
-    }
     return (
       <div>
         {children}
@@ -187,7 +175,7 @@ if (module.makeHot) {
 }
 
 // notice that this component is ignorant of both immutable-js and the animation
-var App3 = React.createClass({
+var App4 = React.createClass({
   getInitialState: function () {
     return { text: 'Hello' };
   },
@@ -213,4 +201,4 @@ var App3 = React.createClass({
   }
 });
 
-module.exports = App3;
+module.exports = App4;
