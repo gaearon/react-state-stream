@@ -3,6 +3,7 @@ var React = require('react');
 var M = require('mori');
 var stateStream = require('./stateStream');
 var easingTypes = require('./easingTypes');
+var ReactInputSelection = require('react/lib/ReactInputSelection');
 
 function toObj(children) {
   return React.Children.map(children, function(child) {
@@ -201,10 +202,19 @@ var App4 = React.createClass({
     e.preventDefault();
 
     var text = this.state.text;
-    text += String.fromCharCode(e.charCode);
+    var node = this.getDOMNode();
+    var selection = ReactInputSelection.getSelection(node);
+
+    text = text.split('');
+    text.splice(selection.start, selection.end - selection.start, String.fromCharCode(e.charCode));
+    text = text.join('');
 
     this.setState({
       text: text
+    }, function () {
+      ReactInputSelection.setSelection(node, {
+        start: selection.end + 1
+      });
     });
   },
 
@@ -216,7 +226,12 @@ var App4 = React.createClass({
            onKeyDown={this.handleKeyDown}>
         <Container>
           {this.state.text.split('').map(function (l, i) {
-            return <span key={i}>{l}</span>;
+            return (
+              <span key={i}
+                    style={{whiteSpace: 'pre'}}>
+                {l}
+              </span>
+            );
           })}
         </Container>
       </div>
