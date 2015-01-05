@@ -34,10 +34,11 @@ function take2(n, seq) {
   return M.concat(s, M.repeat(n - length, M.last(s)));
 }
 
+// we don't want to drop the last frame,
+// or we'll end up losing the final state.
 function drop2(n, seq) {
   var s = M.drop(n, seq);
-  var length = M.count(s);
-  if (length > 0) {
+  if (!M.is_empty(s)) {
     return s;
   }
   return M.repeat(1, M.last(seq));
