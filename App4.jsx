@@ -181,7 +181,9 @@ if (module.makeHot) {
 // notice that this component is ignorant of both immutable-js and the animation
 var App4 = React.createClass({
   getInitialState: function () {
-    return { text: 'lol' };
+    return {
+      text: 'Click on me and type something'
+    };
   },
 
   handleKeyDown: function (e) {
