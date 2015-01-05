@@ -34,6 +34,15 @@ function take2(n, seq) {
   return M.concat(s, M.repeat(n - length, M.last(s)));
 }
 
+function drop2(n, seq) {
+  var s = M.drop(n, seq);
+  var length = M.count(s);
+  if (length > 0) {
+    return s;
+  }
+  return M.repeat(1, M.last(seq));
+}
+
 var stateStreamMixin = {
   setStateStream: function(stream) {
     this.stream = stream;
@@ -95,6 +104,7 @@ var stateStream = {
   toMs: toMs,
   toFrameCount: toFrameCount,
   take2: take2,
+  drop2: drop2
 };
 
 module.exports = stateStream;
