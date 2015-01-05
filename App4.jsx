@@ -143,14 +143,15 @@ var Container = React.createClass({
   },
 
   componentDidUpdate: function (prevProps, prevState) {
-    // This isn't correct because we only check count but should check keys
-    if (prevState.children.length !== this.state.children.length) {
+    var o1 = toObj(this.state.children),
+        o2 = toObj(prevState.children);
+
+    if (diff(o1, o2).length || diff(o2, o1).length) {
       this.props.onUpdate();
     }
   },
 
   render: function() {
-    console.log(this.state.children.length);
     var state = this.state;
     var children = state.children.map(function (kv) {
       var key = kv.key;
@@ -178,11 +179,21 @@ if (module.makeHot) {
   Container = module.makeHot(Container);
 }
 
+var nextUuid = 0;
+function toIndexedChars(s) {
+  return s.split('').map(function (char) {
+    return {
+      uuid: nextUuid++,
+      char: char
+    };
+  });
+}
+
 // notice that this component is ignorant of both immutable-js and the animation
 var App4 = React.createClass({
   getInitialState: function () {
     return {
-      text: 'Click on me and type something'
+      chars: toIndexedChars('Click on me and type something')
     };
   },
 
@@ -194,45 +205,45 @@ var App4 = React.createClass({
 
     e.preventDefault();
 
-    var text = this.state.text;
+    var chars = this.state.chars;
     var selection = this.getSelection();
     var nextSelectionStart;
 
-    text = text.split('');
     if (selection.end > selection.start) {
-      text.splice(selection.start, selection.end - selection.start);
+      chars.splice(selection.start, selection.end - selection.start);
       nextSelectionStart = selection.start;
     } else {
-      text.splice(selection.start - 1, selection.start);
+      chars.splice(selection.start - 1, 1);
       nextSelectionStart = selection.start - 1;
     }
-    text = text.join('');
 
     this.setSelection({
       start: nextSelectionStart
     });
 
     this.setState({
-      text: text
+      chars: chars
     });
   },
 
   handleKeyPress: function (e) {
     e.preventDefault();
 
-    var text = this.state.text;
+    var chars = this.state.chars;
     var selection = this.getSelection();
 
-    text = text.split('');
-    text.splice(selection.start, selection.end - selection.start, String.fromCharCode(e.charCode));
-    text = text.join('');
+    chars.splice(
+      selection.start,
+      selection.end - selection.start,
+      toIndexedChars(String.fromCharCode(e.charCode))[0]
+    );
 
     this.setSelection({
       start: selection.start + 1
     });
 
     this.setState({
-      text: text
+      chars: chars
     });
   },
 
@@ -266,11 +277,11 @@ var App4 = React.createClass({
            onKeyPress={this.handleKeyPress}
            onKeyDown={this.handleKeyDown}>
         <Container onUpdate={this.handleContainerUpdate}>
-          {this.state.text.split('').map(function (l, i) {
+          {this.state.chars.map(function (char) {
             return (
-              <span key={i}
+              <span key={char.uuid}
                     style={{whiteSpace: 'pre'}}>
-                {l}
+                {char.char}
               </span>
             );
           })}
